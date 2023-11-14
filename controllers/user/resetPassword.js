@@ -11,6 +11,7 @@ const getResetPassword = async(req, res, next) => {
     //destroy all the tokens that have expired
     await Token.destroy({
         where:{
+            //uses Sequelize Op method to find which token has an expiry date less than today's date
             expiration: {[Op.lt]: Sequelize.fn('CURDATE')},
         }
     })
@@ -18,22 +19,26 @@ const getResetPassword = async(req, res, next) => {
     const record = await Token.findOne({
         where: {
             email,
+            //uses Sequelize Op method to find which token has an expiry date greater than today's date
             expiration: {[Op.gt]: Sequelize.fn('CURDATE')},
             token,
         }
     })
-
+    
+    // if token doesnt exist, tell them to redo the forgot password process
     if(!record){
-        return res.render('user/reset-password', {
-            message: 'Token has expired. Please try password reset again.',
+        return res.status(200).send({
+            message: "Token is invalid or has expired, please click on forgot password",
             showForm: false
-        });
+        })
     }
 
-    res.render('user/reset-password', {
-        showForm: true,
-        record: record
-    });
+    // if the token exist show the form to allow the user enter their password
+    res.status(200).send({
+        message: "token exist",
+        record,
+        showForm: true
+    })
 }
 
 
@@ -47,10 +52,11 @@ const postResetPassword = async(req, res, next) => {
 
     //check if the password is greater than 6
 
-    if (!password1.length > 6 ){
-        return res.stautus(400).send({message: 'Password does not meet the minimum requirements'})
+    if (password1.length < 6 ){
+        return res.status(400).send({message: 'Password does not meet the minimum requirements'})
     }
 
+    //find the reset token associated with this email
     const token = await Token.findOne({
         where: {
             email
@@ -58,6 +64,7 @@ const postResetPassword = async(req, res, next) => {
 
     })
 
+    // if token doesnt exist, tell them to redo the forgot password process
     if (!token){
        return res.status(400).send({message: 'Token is invalid or has expired. Please try the reset process again'})
     }else{
@@ -89,8 +96,9 @@ const postResetPassword = async(req, res, next) => {
         
         
         } catch (error) {
-            console.log(error)
-           return res.status(400).send({message: 'Error updating the password'}) 
+           return res.status(400).send({
+            error,
+            message: 'Error updating the password'}) 
         }
     }
 

@@ -44,11 +44,12 @@ const forgotPassword = async (req, res, next) => {
                 console.log(token)
               
                 //link to send to the user's email for reset
-                const link = 'To reset your password, please click the link below.\n\nhttps://'+process.env.DOMAIN+'/user/reset_password?token='+encodeURIComponent(token)+'&email='+email;
+                const link = 'To reset your password, please click the link below.\n\nhttps://'+process.env.DOMAIN+'/user/reset_password?token='+encodeURIComponent(token.token)+'&email='+email;
         
                 // to check if it works
                 res.status(200).send({
                     message: "Yay it works",
+                    token,
                     link
                 })
                 //send this data to the email
