@@ -19,11 +19,24 @@ const loginUser = async (req, res, next) => {
                 { user_id: user.id, email },
                 process.env.TOKEN_KEY
             )
+            
+            // update the user object on the database with this signin token
+            const updatedUser= await User.update(
+                {
+                    signinToken: token
+                },
+                {
+                    where: {
+                        email
+                    }
+                }
+            )
 
             return res.status(200).send({
                 message: "User has successfully signed in!",
                 user,
-                token
+                token,
+                updatedUser
             })
             
         }else{

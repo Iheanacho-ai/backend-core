@@ -25,6 +25,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      signinToken: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

@@ -20,7 +20,7 @@ const registerUser = async (req, res, next) => {
         if(existingUser){
            return res.status(400).send({message: "User with this email exists already"})
         }else{
-            // create a new user
+            // create a workfactor number
             const workFactor = 8;
             // Combined function to generate salt and hash for privacy
             const hashedPassword = await bcrypt.hash(password, workFactor);
@@ -34,12 +34,26 @@ const registerUser = async (req, res, next) => {
                         email,
                         password: hashedPassword
                     })
-    
+                    
+                    // create a jwt token that will enable authorised users perform specific functions
                     const token = jwt.sign(
                         { user_id: user.id, email },
                         process.env.TOKEN_KEY
                     )
-    
+
+                    //save the token to the user on the database
+                    await User.update(
+                        {
+                            signinToken: token
+                        },
+                        {
+                            where: {
+                                email
+                            }
+                        }
+                    )
+                    
+                    //send the user object and token as a response
                     res.status(200).json({
                         message: "User has been successfully created!",
                         user,
@@ -47,7 +61,12 @@ const registerUser = async (req, res, next) => {
                     })
                     
                 } catch (error) {
-                    return res.status(400).json({error: error.message})
+                    return res.status(400).json(
+                        {
+                            message: "Error creating a new user",
+                            error: error.message
+                        }
+                    )
                     
                 }
     

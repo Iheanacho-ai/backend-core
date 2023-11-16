@@ -6,7 +6,7 @@ const sendEmail = require('../../utils/sendEmail');
 const crypto = require("crypto");
 
 
-const forgotPassword = async (req, res, next) => {
+const forgotPassword = async (req, res) => {
 
     try {
         const {email} = req.body;
